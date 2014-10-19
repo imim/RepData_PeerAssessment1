@@ -1,25 +1,292 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "PA1_template.Rmd"
+author: "Isabel M. Izquierdo Martin"
+date: "10/19/2014"
+output: html_document
 ---
+SCRIPT: PA1_template.Rmd
 
+AUTHOR: Isabel M. Izquierdo Martin (imim)
 
-## Loading and preprocessing the data
+DATE: 10/19/2014
 
+OUTPUT: PA1_template.md, PA1_template.html files plus figure directory with the images 
 
+PURPOSE: Report answering some questions about "activity" data
 
-## What is mean total number of steps taken per day?
+DATA SOURCE: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
 
+INPUT DATA: activity.csv, after unzipped them from the data source
 
+LIMITATIONS: activity.csv, and the current R Markdown Script must be in the working directory
 
-## What is the average daily activity pattern?
+EXECUTION: processing the R markdown file with knit2html() function in R
+             (from the knitr package) by running the function from the console:
+             knit2html("PA1_template.Rmd", "PA1_template.html", options="")
+             knit2html("PA1_template.Rmd", "PA1_template.md", options="")
 
+# Loading and preprocessing the data
+```{r, echo = TRUE, results="hide"}
+Sys.setlocale("LC_TIME", "en_US.UTF-8") 
+```
 
+```{r loadingdata, echo = TRUE, results="asis"}
+InputDataNoNA <- read.csv("activity.csv")
+InputDataNoNA$date <- as.Date(InputDataNoNA$date)
 
-## Imputing missing values
+# In order to print tables in the report
+library(xtable)
+TableInputData <- xtable(summary(InputDataNoNA))
+print(TableInputData, type = "html")
+``` 
 
+# What is mean total number of steps taken per day?
+For this part of the assignment, the missing values in the dataset are ignored.
+```{r removingrownames, echo = TRUE}
+# For clarity, removing row.names column
+row.names(InputDataNoNA) <- NULL
+```
+The dataframe's name (InputDataNoNA) makes reference to the fact that missing values has not been replaced.
 
+## Make a histogram of the total number of steps taken each day
+```{r histstepsbyday, echo = TRUE, fig.width=25, fig.height=10}
+# In order to make plots
+library(ggplot2)
+ggplot(InputDataNoNA, aes(x=as.factor(date), y=as.numeric(steps))) + 
+        xlab("Date") + ylab("Steps") + 
+        theme(axis.text.x = element_text(angle=90, hjust=1, size=16)) +
+        theme(axis.text.y = element_text(size=16)) +
+        theme(plot.title = element_text(size = 25)) +
+        theme(axis.title.x = element_text(size = 20)) +
+        theme(axis.title.y = element_text(size = 20)) +
+        ggtitle ("Total number of steps taken each date") + 
+        geom_bar(stat="identity", fill="lightblue")
+```
 
-## Are there differences in activity patterns between weekdays and weekends?
+## Calculate and report the mean and median total number of steps taken per day
+```{r meanmedianperday, echo = TRUE, results="asis"}
+# In order to use tapply, sapply
+library(plyr)
+mean <- tapply(InputDataNoNA$steps,InputDataNoNA$date, mean, na.rm=TRUE)
+median <- tapply(InputDataNoNA$steps,InputDataNoNA$date, mean, na.rm=TRUE)
+mean <- as.data.frame(mean)
+median <- as.data.frame(median)
+DataMeanMedian <- as.data.frame(c(mean,median))
+DataMeanMedian$date <- rownames(DataMeanMedian)
+DataMeanMedianNoNA <- DataMeanMedian
+
+row.names(DataMeanMedianNoNA) <- NULL
+DataMeanMedianNoNA <- DataMeanMedianNoNA[, c("date","mean","median")]
+
+TableMeanMedian <- xtable(DataMeanMedianNoNA)
+print(TableMeanMedian, type = "html")
+```
+
+# What is the average daily activity pattern?
+## Make a time series plot (i.e. type = "l")
+```{r timeseriesplot, echo = TRUE, fig.width=25, fig.height=10}
+DataMeanByInterval <- ddply(InputDataNoNA,c('interval'), summarise, 
+     mean=(mean(steps,na.rm=TRUE)))
+
+p <- ggplot(data = DataMeanByInterval, aes(x=interval,y=mean)) + 
+            xlab('Interval (min)') +
+            ylab('Average Steps') +
+            scale_x_discrete(limits=c(seq(min(DataMeanByInterval$interval),
+                                          max(DataMeanByInterval$interval), 
+                                          by=75))) +
+            theme(axis.text.x = element_text(angle=90, hjust=1, size=16)) +
+            theme(plot.title = element_text(size = 25)) +
+            theme(axis.text.y = element_text(size = 16)) +
+            theme(axis.title.y = element_text(size = 20)) +
+            theme(axis.title.x = element_text(size = 20)) +
+            ggtitle('Average number of steps taken across all days, by interval (min)') +
+            geom_line()
+print(p)
+```
+
+## Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
+
+```{r maxmeaninterv, echo = TRUE}
+MaxMeanInterval <- DataMeanByInterval[max(DataMeanByInterval$mean),]
+```
+The interval `r MaxMeanInterval$interval` contains the maximun number of steps (on average accross all the days): `r MaxMeanInterval$mean` steps.
+
+#Imputing missing values
+## Calculate and report the total number of missing values in the dataset
+```{r calculatingna, echo = TRUE}
+InputDataNA <- InputDataNoNA[!complete.cases(InputDataNoNA), ]
+```
+The total number of rows with NAs in the dataset is `r dim(InputDataNA)[1]`.
+
+## Devise a strategy for filling-in all of the missing values in the dataset
+The chosen strategy is to replace the NA for a 5-minut interval, by the mean across all the days, on that 5-minute interval.
+Below, a summary of the subset that originally had NA values, after being replaced.
+
+```{r subsettingna, echo = TRUE, results="asis"}
+InputDataNAMeanInterv <- merge(InputDataNA, DataMeanByInterval, by.x=c("interval"), by.y=c("interval"), all = FALSE)
+
+InputDataNAMeanInterv$steps <- InputDataNAMeanInterv$mean
+InputDataNAMeanInterv <- InputDataNAMeanInterv[, 1:3]
+
+TableInputDataNAMeanInterv <- xtable(summary(InputDataNAMeanInterv))
+print(TableInputDataNAMeanInterv, type="html")
+```
+## Create a new dataset that is equal to the original dataset but with the missing data filled in
+
+Below, a summary of the whole dataset, after having replaced the missing values.
+
+```{r replacingna, echo TRUE, results="asis"}
+InputDataAll <- merge(InputDataNoNA, InputDataNAMeanInterv, by.x=c("interval", "date"), by.y=c("interval","date"), all=TRUE)
+
+InputDataAll$steps.x[is.na(InputDataAll$steps.x)] <- InputDataAll$steps.y[is.na(InputDataAll$steps.x)]
+
+InputDataAll <- InputDataAll[1:3]
+names(InputDataAll) <- c("interval", "date", "steps")
+
+SummaryInputDataAll <- xtable(summary(InputDataAll))
+print(SummaryInputDataAll, type = "html")
+```
+
+## Make a histogram of the total number of steps taken each day
+```{r histreplacedna, echo = TRUE, fig.width=25, fig.height=10}
+ggplot(InputDataAll, aes(x=as.factor(date), y=as.numeric(steps))) + 
+        xlab("Date") + ylab("Steps") + 
+        theme(axis.text.x = element_text(angle=90, hjust=1, size=16)) +
+        theme(axis.text.y = element_text(size=16)) +
+        theme(plot.title = element_text(size = 25)) +
+        theme(axis.title.x = element_text(size = 20)) +
+        theme(axis.title.y = element_text(size = 20)) +
+        ggtitle ("Total number of steps taken each date (after NA filled-in)") + 
+        geom_bar(stat="identity", fill="lightblue")
+```
+
+## Calculate and report the mean and median total number of steps taken per day
+```{r meanmedianreplacedna, echo = TRUE, results="asis"}
+meanAll <- tapply(InputDataAll$steps,InputDataAll$date, mean, na.rm=TRUE)
+medianAll <- tapply(InputDataAll$steps,InputDataAll$date, mean, na.rm=TRUE)
+meanAll <- as.data.frame(meanAll)
+medianAll <- as.data.frame(medianAll)
+DataMeanMedianAll <- as.data.frame(c(meanAll,medianAll))
+DataMeanMedianAll$date <- rownames(DataMeanMedianAll)
+DataMeanMedianAll <- DataMeanMedianAll[complete.cases(DataMeanMedianAll), ]
+row.names(DataMeanMedianAll) <- NULL
+DataMeanMedianAll <- DataMeanMedianAll[, c("date","meanAll","medianAll")]
+names(DataMeanMedianAll) <- c("date", "mean", "median")
+
+TableMeanMedianAll <- xtable(DataMeanMedianAll)
+print(TableMeanMedianAll, type = "html")
+```
+## Do these values differ from the estimates from the first part of the assignment? 
+
+Creating dataset with the original input plus replaced NA dataset
+
+```{r mixingdataset, echo = TRUE}
+DataMeanMedianNoNA$include_na <- FALSE
+DataMeanMedianAll$include_na <- TRUE
+DataMeanMedianAllAndNoNA <- rbind(DataMeanMedianNoNA,DataMeanMedianAll)
+DataMeanMedianAllAndNoNA$date <- as.factor(DataMeanMedianAllAndNoNA$date)
+```
+
+Mean: We plot a line graph with two lines, one for the case of ignored NA, and one for the case of filled-in NA:
+
+```{r meanplotcomp, echo = TRUE, fig.width=25, fig.height=10}
+ggplot(DataMeanMedianAllAndNoNA, aes(x=as.factor(date), y=as.numeric(mean), 
+                                     colour=as.factor(include_na),
+                                     group=as.factor(include_na))) +
+        xlab("Date") + ylab("Mean") + 
+        labs(colour="NA replaced") +
+        theme(axis.text.x = element_text(angle=90, hjust=1, size=14)) +
+        theme(axis.text.y = element_text(size=16)) +
+        theme(plot.title = element_text(size = 25)) +
+        theme(axis.title.x = element_text(size = 20)) +
+        theme(axis.title.y = element_text(size = 20)) +
+        theme(legend.title=element_text(size=18)) +
+         theme(legend.text=element_text(size=16)) +
+        ggtitle ("Mean of steps by date") + 
+        geom_line()
+```
+
+Median: We plot another line graph with two lines, one for the case of ignored NA, and one for the case of filled-in NA:
+
+```{r medianplotcomp, echo = TRUE, fig.width=25, fig.height=10}
+
+ggplot(DataMeanMedianAllAndNoNA, aes(x=as.factor(date), y=as.numeric(median), 
+                                     colour=as.factor(include_na),
+                                     group=as.factor(include_na))) +
+        xlab("Date") + ylab("Median") + 
+        labs(colour="NA replaced") +
+        theme(axis.text.x = element_text(angle=90, hjust=1, size=14)) +
+        theme(axis.text.y = element_text(size=16)) +
+        theme(plot.title = element_text(size = 25)) +
+        theme(axis.title.x = element_text(size = 20)) +
+        theme(axis.title.y = element_text(size = 20)) +
+        theme(legend.title=element_text(size=18)) +
+        theme(legend.text=element_text(size=16)) +
+        ggtitle ("Median of steps by date") + 
+        geom_line()
+``` 
+
+The lines are overlapped in both cases (mean and median). As the dates with NA have NA values in all their intervals, the daily mean and median only differs for that days: In the first part of the assignment those days has no mean neither median, and now they have. The rest of the dates have the same mean an median.
+
+## What is the impact of imputing missing data on the estimates of the total daily number of steps?
+```{r difforigvsreplaced, echo = TRUE}
+TotalByDateNoNA <- ddply(InputDataNoNA,c('date'), summarise, 
+                         sum=(sum(steps,na.rm=TRUE)))
+
+TotalByDateAll <- ddply(InputDataAll,c('date'), summarise, 
+                        sum=(sum(steps,na.rm=TRUE)))
+
+TotalByDateAllAndNoNA <- merge(TotalByDateNoNA, TotalByDateAll, by.x = c("date"),
+                               by.y =c("date"), all =FALSE)
+TotalByDateAllAndNoNA$diff_sum <- as.numeric(TotalByDateAllAndNoNA$sum.y) -
+                                  as.numeric(TotalByDateAllAndNoNA$sum.x)
+```
+
+If we calculate the differences in the daily totals of steps, we only have: `r dim(TotalByDateAllAndNoNA[TotalByDateAllAndNoNA$diff_sum != 0,])[1]` rows with a difference not equal 0. So, the only impact is that those days with NAs, now have a estimated total number of steps of `r unique(TotalByDateAllAndNoNA$diff_sum[TotalByDateAllAndNoNA$diff_sum!=0])`.
+
+# Are there differences in activity patterns between weekdays and weekends?
+
+## Create a new factor variable in the dataset with two levels – “weekday” and “weekend”
+
+```{r includingwd, echo = TRUE, results="asis"}
+InputDataAll$date <- as.Date(as.character(InputDataAll$date))
+InputDataAll$weekday <- weekdays(InputDataAll$date)
+InputDataAll$is_weekend <- (InputDataAll$weekday %in% c("Sunday", "Saturday"))
+InputDataAll$day_type[(InputDataAll$weekday %in% c("Sunday", "Saturday"))] <- "weekend"
+InputDataAll$day_type[!(InputDataAll$weekday %in% c("Sunday", "Saturday"))] <- "weekday"
+InputDataAll$day_type <- as.factor(InputDataAll$day_type)
+
+SummaryInputDataAllWeekday <- xtable(summary(InputDataAll))
+print(SummaryInputDataAllWeekday, type = "html")
+```
+
+## Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis)
+
+```{r comparingwd, echo = TRUE, fig.width=25, fig.height=10}
+TotalByIntervAllWeekday <- ddply(InputDataAll,c("interval", "day_type"), summarise, 
+     mean=(mean(steps,na.rm=TRUE)))
+
+ggplot(TotalByIntervAllWeekday, aes(x=interval, y=mean)) + 
+        xlab("Interval") + ylab("Number of steps (average)") + 
+        ggtitle ("Average number of steps taken across all days of the same day type, by interval (min)") +
+        facet_wrap( ~ day_type, nrow=2) +
+        facet_wrap( ~ day_type, ncol=1) +
+        theme(line = element_line(colour = "lightblue"),
+              panel.border = element_rect(colour="black", fill=NA, size=1),
+              panel.grid.major.x = element_blank(),
+              panel.background= element_rect(fill = "white", colour = NA),
+              panel.grid.minor.x = element_blank(),
+              panel.grid.major.y = element_blank(),
+              panel.grid.minor.y = element_blank(),
+              strip.text = element_text(face="bold", size=rel(2)),
+              strip.background = element_rect(fill="burlywood1", colour="black",
+              size=0.6)) +
+        theme(axis.text.x = element_text(size=16)) +
+        theme(axis.text.y = element_text(size=16)) +
+        theme(plot.title = element_text(size = 25)) +
+        theme(axis.title.x = element_text(size = 20)) +
+        theme(axis.title.y = element_text(size = 20)) +
+        geom_line(colour="deepskyblue2")
+```
+
+Preliminary conclusions: There are differences in activity patterns between weekdays and weekends: The activity is higher on weekdays between 500 and 1000 intervals, and between 1750 and 2000. The activity is higher on weekends between 1500 and 1750 intervals, and just after 2000.  
