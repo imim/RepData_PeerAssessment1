@@ -1,14 +1,14 @@
 ---
 title: "PA1_template.Rmd"
 author: "Isabel M. Izquierdo Martin"
-date: "10/19/2014"
+date: "11/08/2014"
 output: html_document
 ---
 SCRIPT: PA1_template.Rmd
 
 AUTHOR: Isabel M. Izquierdo Martin (imim)
 
-DATE: 10/19/2014
+DATE: 11/08/2014
 
 OUTPUT: PA1_template.md, PA1_template.html files plus figure directory with the images 
 
@@ -22,7 +22,13 @@ LIMITATIONS: activity.csv, and the current R Markdown Script must be in the work
 
 EXECUTION: processing the R markdown file with knit2html() function in R
              (from the knitr package) by running the function from the console:
+             
+             library(knitr)
+             
+             library(markdown)
+             
              knit2html("PA1_template.Rmd", "PA1_template.html", options="")
+             
              knit2html("PA1_template.Rmd", "PA1_template.md", options="")
 
 # Loading and preprocessing the data
@@ -43,7 +49,7 @@ print(TableInputData, type = "html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Oct 19 20:35:02 2014 -->
+<!-- Sat Nov  8 12:43:07 2014 -->
 <table border=1>
 <tr> <th>  </th> <th>     steps </th> <th>      date </th> <th>    interval </th>  </tr>
   <tr> <td align="right"> 1 </td> <td> Min.   :  0.00   </td> <td> Min.   :2012-10-01   </td> <td> Min.   :   0.0   </td> </tr>
@@ -77,7 +83,7 @@ ggplot(InputDataNoNA, aes(x=as.factor(date), y=as.numeric(steps))) +
         theme(axis.title.x = element_text(size = 20)) +
         theme(axis.title.y = element_text(size = 20)) +
         ggtitle ("Total number of steps taken each date") + 
-        geom_bar(stat="identity", fill="lightblue")
+        geom_histogram(stat="identity", fill="lightblue")
 ```
 
 ```
@@ -88,95 +94,15 @@ ggplot(InputDataNoNA, aes(x=as.factor(date), y=as.numeric(steps))) +
 
 ## Calculate and report the mean and median total number of steps taken per day
 
-```r
-# In order to use tapply, sapply
-library(plyr)
-mean <- tapply(InputDataNoNA$steps,InputDataNoNA$date, mean, na.rm=TRUE)
-median <- tapply(InputDataNoNA$steps,InputDataNoNA$date, mean, na.rm=TRUE)
-mean <- as.data.frame(mean)
-median <- as.data.frame(median)
-DataMeanMedian <- as.data.frame(c(mean,median))
-DataMeanMedian$date <- rownames(DataMeanMedian)
-DataMeanMedianNoNA <- DataMeanMedian
-
-row.names(DataMeanMedianNoNA) <- NULL
-DataMeanMedianNoNA <- DataMeanMedianNoNA[, c("date","mean","median")]
-
-TableMeanMedian <- xtable(DataMeanMedianNoNA)
-print(TableMeanMedian, type = "html")
-```
-
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Oct 19 20:35:03 2014 -->
-<table border=1>
-<tr> <th>  </th> <th> date </th> <th> mean </th> <th> median </th>  </tr>
-  <tr> <td align="right"> 1 </td> <td> 2012-10-01 </td> <td align="right">  </td> <td align="right">  </td> </tr>
-  <tr> <td align="right"> 2 </td> <td> 2012-10-02 </td> <td align="right"> 0.44 </td> <td align="right"> 0.44 </td> </tr>
-  <tr> <td align="right"> 3 </td> <td> 2012-10-03 </td> <td align="right"> 39.42 </td> <td align="right"> 39.42 </td> </tr>
-  <tr> <td align="right"> 4 </td> <td> 2012-10-04 </td> <td align="right"> 42.07 </td> <td align="right"> 42.07 </td> </tr>
-  <tr> <td align="right"> 5 </td> <td> 2012-10-05 </td> <td align="right"> 46.16 </td> <td align="right"> 46.16 </td> </tr>
-  <tr> <td align="right"> 6 </td> <td> 2012-10-06 </td> <td align="right"> 53.54 </td> <td align="right"> 53.54 </td> </tr>
-  <tr> <td align="right"> 7 </td> <td> 2012-10-07 </td> <td align="right"> 38.25 </td> <td align="right"> 38.25 </td> </tr>
-  <tr> <td align="right"> 8 </td> <td> 2012-10-08 </td> <td align="right">  </td> <td align="right">  </td> </tr>
-  <tr> <td align="right"> 9 </td> <td> 2012-10-09 </td> <td align="right"> 44.48 </td> <td align="right"> 44.48 </td> </tr>
-  <tr> <td align="right"> 10 </td> <td> 2012-10-10 </td> <td align="right"> 34.38 </td> <td align="right"> 34.38 </td> </tr>
-  <tr> <td align="right"> 11 </td> <td> 2012-10-11 </td> <td align="right"> 35.78 </td> <td align="right"> 35.78 </td> </tr>
-  <tr> <td align="right"> 12 </td> <td> 2012-10-12 </td> <td align="right"> 60.35 </td> <td align="right"> 60.35 </td> </tr>
-  <tr> <td align="right"> 13 </td> <td> 2012-10-13 </td> <td align="right"> 43.15 </td> <td align="right"> 43.15 </td> </tr>
-  <tr> <td align="right"> 14 </td> <td> 2012-10-14 </td> <td align="right"> 52.42 </td> <td align="right"> 52.42 </td> </tr>
-  <tr> <td align="right"> 15 </td> <td> 2012-10-15 </td> <td align="right"> 35.20 </td> <td align="right"> 35.20 </td> </tr>
-  <tr> <td align="right"> 16 </td> <td> 2012-10-16 </td> <td align="right"> 52.38 </td> <td align="right"> 52.38 </td> </tr>
-  <tr> <td align="right"> 17 </td> <td> 2012-10-17 </td> <td align="right"> 46.71 </td> <td align="right"> 46.71 </td> </tr>
-  <tr> <td align="right"> 18 </td> <td> 2012-10-18 </td> <td align="right"> 34.92 </td> <td align="right"> 34.92 </td> </tr>
-  <tr> <td align="right"> 19 </td> <td> 2012-10-19 </td> <td align="right"> 41.07 </td> <td align="right"> 41.07 </td> </tr>
-  <tr> <td align="right"> 20 </td> <td> 2012-10-20 </td> <td align="right"> 36.09 </td> <td align="right"> 36.09 </td> </tr>
-  <tr> <td align="right"> 21 </td> <td> 2012-10-21 </td> <td align="right"> 30.63 </td> <td align="right"> 30.63 </td> </tr>
-  <tr> <td align="right"> 22 </td> <td> 2012-10-22 </td> <td align="right"> 46.74 </td> <td align="right"> 46.74 </td> </tr>
-  <tr> <td align="right"> 23 </td> <td> 2012-10-23 </td> <td align="right"> 30.97 </td> <td align="right"> 30.97 </td> </tr>
-  <tr> <td align="right"> 24 </td> <td> 2012-10-24 </td> <td align="right"> 29.01 </td> <td align="right"> 29.01 </td> </tr>
-  <tr> <td align="right"> 25 </td> <td> 2012-10-25 </td> <td align="right"> 8.65 </td> <td align="right"> 8.65 </td> </tr>
-  <tr> <td align="right"> 26 </td> <td> 2012-10-26 </td> <td align="right"> 23.53 </td> <td align="right"> 23.53 </td> </tr>
-  <tr> <td align="right"> 27 </td> <td> 2012-10-27 </td> <td align="right"> 35.14 </td> <td align="right"> 35.14 </td> </tr>
-  <tr> <td align="right"> 28 </td> <td> 2012-10-28 </td> <td align="right"> 39.78 </td> <td align="right"> 39.78 </td> </tr>
-  <tr> <td align="right"> 29 </td> <td> 2012-10-29 </td> <td align="right"> 17.42 </td> <td align="right"> 17.42 </td> </tr>
-  <tr> <td align="right"> 30 </td> <td> 2012-10-30 </td> <td align="right"> 34.09 </td> <td align="right"> 34.09 </td> </tr>
-  <tr> <td align="right"> 31 </td> <td> 2012-10-31 </td> <td align="right"> 53.52 </td> <td align="right"> 53.52 </td> </tr>
-  <tr> <td align="right"> 32 </td> <td> 2012-11-01 </td> <td align="right">  </td> <td align="right">  </td> </tr>
-  <tr> <td align="right"> 33 </td> <td> 2012-11-02 </td> <td align="right"> 36.81 </td> <td align="right"> 36.81 </td> </tr>
-  <tr> <td align="right"> 34 </td> <td> 2012-11-03 </td> <td align="right"> 36.70 </td> <td align="right"> 36.70 </td> </tr>
-  <tr> <td align="right"> 35 </td> <td> 2012-11-04 </td> <td align="right">  </td> <td align="right">  </td> </tr>
-  <tr> <td align="right"> 36 </td> <td> 2012-11-05 </td> <td align="right"> 36.25 </td> <td align="right"> 36.25 </td> </tr>
-  <tr> <td align="right"> 37 </td> <td> 2012-11-06 </td> <td align="right"> 28.94 </td> <td align="right"> 28.94 </td> </tr>
-  <tr> <td align="right"> 38 </td> <td> 2012-11-07 </td> <td align="right"> 44.73 </td> <td align="right"> 44.73 </td> </tr>
-  <tr> <td align="right"> 39 </td> <td> 2012-11-08 </td> <td align="right"> 11.18 </td> <td align="right"> 11.18 </td> </tr>
-  <tr> <td align="right"> 40 </td> <td> 2012-11-09 </td> <td align="right">  </td> <td align="right">  </td> </tr>
-  <tr> <td align="right"> 41 </td> <td> 2012-11-10 </td> <td align="right">  </td> <td align="right">  </td> </tr>
-  <tr> <td align="right"> 42 </td> <td> 2012-11-11 </td> <td align="right"> 43.78 </td> <td align="right"> 43.78 </td> </tr>
-  <tr> <td align="right"> 43 </td> <td> 2012-11-12 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-  <tr> <td align="right"> 44 </td> <td> 2012-11-13 </td> <td align="right"> 25.47 </td> <td align="right"> 25.47 </td> </tr>
-  <tr> <td align="right"> 45 </td> <td> 2012-11-14 </td> <td align="right">  </td> <td align="right">  </td> </tr>
-  <tr> <td align="right"> 46 </td> <td> 2012-11-15 </td> <td align="right"> 0.14 </td> <td align="right"> 0.14 </td> </tr>
-  <tr> <td align="right"> 47 </td> <td> 2012-11-16 </td> <td align="right"> 18.89 </td> <td align="right"> 18.89 </td> </tr>
-  <tr> <td align="right"> 48 </td> <td> 2012-11-17 </td> <td align="right"> 49.79 </td> <td align="right"> 49.79 </td> </tr>
-  <tr> <td align="right"> 49 </td> <td> 2012-11-18 </td> <td align="right"> 52.47 </td> <td align="right"> 52.47 </td> </tr>
-  <tr> <td align="right"> 50 </td> <td> 2012-11-19 </td> <td align="right"> 30.70 </td> <td align="right"> 30.70 </td> </tr>
-  <tr> <td align="right"> 51 </td> <td> 2012-11-20 </td> <td align="right"> 15.53 </td> <td align="right"> 15.53 </td> </tr>
-  <tr> <td align="right"> 52 </td> <td> 2012-11-21 </td> <td align="right"> 44.40 </td> <td align="right"> 44.40 </td> </tr>
-  <tr> <td align="right"> 53 </td> <td> 2012-11-22 </td> <td align="right"> 70.93 </td> <td align="right"> 70.93 </td> </tr>
-  <tr> <td align="right"> 54 </td> <td> 2012-11-23 </td> <td align="right"> 73.59 </td> <td align="right"> 73.59 </td> </tr>
-  <tr> <td align="right"> 55 </td> <td> 2012-11-24 </td> <td align="right"> 50.27 </td> <td align="right"> 50.27 </td> </tr>
-  <tr> <td align="right"> 56 </td> <td> 2012-11-25 </td> <td align="right"> 41.09 </td> <td align="right"> 41.09 </td> </tr>
-  <tr> <td align="right"> 57 </td> <td> 2012-11-26 </td> <td align="right"> 38.76 </td> <td align="right"> 38.76 </td> </tr>
-  <tr> <td align="right"> 58 </td> <td> 2012-11-27 </td> <td align="right"> 47.38 </td> <td align="right"> 47.38 </td> </tr>
-  <tr> <td align="right"> 59 </td> <td> 2012-11-28 </td> <td align="right"> 35.36 </td> <td align="right"> 35.36 </td> </tr>
-  <tr> <td align="right"> 60 </td> <td> 2012-11-29 </td> <td align="right"> 24.47 </td> <td align="right"> 24.47 </td> </tr>
-  <tr> <td align="right"> 61 </td> <td> 2012-11-30 </td> <td align="right">  </td> <td align="right">  </td> </tr>
-   </table>
+The mean total number of steps taken per day is 37.3825996.
+The median total number of steps taken per day is 0.
 
 # What is the average daily activity pattern?
 ## Make a time series plot (i.e. type = "l")
 
 ```r
+# In order to use "ddply"
+library("plyr")
 DataMeanByInterval <- ddply(InputDataNoNA,c('interval'), summarise, 
      mean=(mean(steps,na.rm=TRUE)))
 
@@ -202,9 +128,9 @@ print(p)
 
 
 ```r
-MaxMeanInterval <- DataMeanByInterval[max(DataMeanByInterval$mean),]
+MaxMeanInterval <- DataMeanByInterval[DataMeanByInterval$mean==max(DataMeanByInterval$mean),]
 ```
-The interval 1705 contains the maximun number of steps (on average accross all the days): 56.3018868 steps.
+The interval 835 contains the maximun number of steps (on average accross all the days): 206.1698113 steps.
 
 #Imputing missing values
 ## Calculate and report the total number of missing values in the dataset
@@ -230,7 +156,7 @@ print(TableInputDataNAMeanInterv, type="html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Oct 19 20:35:04 2014 -->
+<!-- Sat Nov  8 12:43:08 2014 -->
 <table border=1>
 <tr> <th>  </th> <th>    interval </th> <th>     steps </th> <th>      date </th>  </tr>
   <tr> <td align="right"> 1 </td> <td> Min.   :   0.0   </td> <td> Min.   :  0.000   </td> <td> Min.   :2012-10-01   </td> </tr>
@@ -258,7 +184,7 @@ print(SummaryInputDataAll, type = "html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Oct 19 20:35:04 2014 -->
+<!-- Sat Nov  8 12:43:08 2014 -->
 <table border=1>
 <tr> <th>  </th> <th>    interval </th> <th>      date </th> <th>     steps </th>  </tr>
   <tr> <td align="right"> 1 </td> <td> Min.   :   0.0   </td> <td> Min.   :2012-10-01   </td> <td> Min.   :  0.00   </td> </tr>
@@ -280,16 +206,36 @@ ggplot(InputDataAll, aes(x=as.factor(date), y=as.numeric(steps))) +
         theme(axis.title.x = element_text(size = 20)) +
         theme(axis.title.y = element_text(size = 20)) +
         ggtitle ("Total number of steps taken each date (after NA filled-in)") + 
-        geom_bar(stat="identity", fill="lightblue")
+        geom_histogram(stat="identity", fill="lightblue")
 ```
 
 ![plot of chunk histreplacedna](figure/histreplacedna-1.png) 
 
 ## Calculate and report the mean and median total number of steps taken per day
+The mean total number of steps taken per day is 37.3825996.
+The median total number of steps taken per day is 0.
+
+## Do these values differ from the estimates from the first part of the assignment? 
+No, these values don't differ from the estimates from the first part of the assignment.
+Let's see why.
+
+Creating dataset with the mean and median for the original input plus replaced NA dataset
+
 
 ```r
+mean <- tapply(InputDataNoNA$steps,InputDataNoNA$date, mean, na.rm=TRUE)
+median <- tapply(InputDataNoNA$steps,InputDataNoNA$date, median, na.rm=TRUE)
+mean <- as.data.frame(mean)
+median <- as.data.frame(median)
+DataMeanMedian <- as.data.frame(c(mean,median))
+DataMeanMedian$date <- rownames(DataMeanMedian)
+DataMeanMedianNoNA <- DataMeanMedian
+
+row.names(DataMeanMedianNoNA) <- NULL
+DataMeanMedianNoNA <- DataMeanMedianNoNA[, c("date","mean","median")]
+
 meanAll <- tapply(InputDataAll$steps,InputDataAll$date, mean, na.rm=TRUE)
-medianAll <- tapply(InputDataAll$steps,InputDataAll$date, mean, na.rm=TRUE)
+medianAll <- tapply(InputDataAll$steps,InputDataAll$date, median, na.rm=TRUE)
 meanAll <- as.data.frame(meanAll)
 medianAll <- as.data.frame(medianAll)
 DataMeanMedianAll <- as.data.frame(c(meanAll,medianAll))
@@ -299,82 +245,6 @@ row.names(DataMeanMedianAll) <- NULL
 DataMeanMedianAll <- DataMeanMedianAll[, c("date","meanAll","medianAll")]
 names(DataMeanMedianAll) <- c("date", "mean", "median")
 
-TableMeanMedianAll <- xtable(DataMeanMedianAll)
-print(TableMeanMedianAll, type = "html")
-```
-
-<!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Oct 19 20:35:05 2014 -->
-<table border=1>
-<tr> <th>  </th> <th> date </th> <th> mean </th> <th> median </th>  </tr>
-  <tr> <td align="right"> 1 </td> <td> 2012-10-01 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-  <tr> <td align="right"> 2 </td> <td> 2012-10-02 </td> <td align="right"> 0.44 </td> <td align="right"> 0.44 </td> </tr>
-  <tr> <td align="right"> 3 </td> <td> 2012-10-03 </td> <td align="right"> 39.42 </td> <td align="right"> 39.42 </td> </tr>
-  <tr> <td align="right"> 4 </td> <td> 2012-10-04 </td> <td align="right"> 42.07 </td> <td align="right"> 42.07 </td> </tr>
-  <tr> <td align="right"> 5 </td> <td> 2012-10-05 </td> <td align="right"> 46.16 </td> <td align="right"> 46.16 </td> </tr>
-  <tr> <td align="right"> 6 </td> <td> 2012-10-06 </td> <td align="right"> 53.54 </td> <td align="right"> 53.54 </td> </tr>
-  <tr> <td align="right"> 7 </td> <td> 2012-10-07 </td> <td align="right"> 38.25 </td> <td align="right"> 38.25 </td> </tr>
-  <tr> <td align="right"> 8 </td> <td> 2012-10-08 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-  <tr> <td align="right"> 9 </td> <td> 2012-10-09 </td> <td align="right"> 44.48 </td> <td align="right"> 44.48 </td> </tr>
-  <tr> <td align="right"> 10 </td> <td> 2012-10-10 </td> <td align="right"> 34.38 </td> <td align="right"> 34.38 </td> </tr>
-  <tr> <td align="right"> 11 </td> <td> 2012-10-11 </td> <td align="right"> 35.78 </td> <td align="right"> 35.78 </td> </tr>
-  <tr> <td align="right"> 12 </td> <td> 2012-10-12 </td> <td align="right"> 60.35 </td> <td align="right"> 60.35 </td> </tr>
-  <tr> <td align="right"> 13 </td> <td> 2012-10-13 </td> <td align="right"> 43.15 </td> <td align="right"> 43.15 </td> </tr>
-  <tr> <td align="right"> 14 </td> <td> 2012-10-14 </td> <td align="right"> 52.42 </td> <td align="right"> 52.42 </td> </tr>
-  <tr> <td align="right"> 15 </td> <td> 2012-10-15 </td> <td align="right"> 35.20 </td> <td align="right"> 35.20 </td> </tr>
-  <tr> <td align="right"> 16 </td> <td> 2012-10-16 </td> <td align="right"> 52.38 </td> <td align="right"> 52.38 </td> </tr>
-  <tr> <td align="right"> 17 </td> <td> 2012-10-17 </td> <td align="right"> 46.71 </td> <td align="right"> 46.71 </td> </tr>
-  <tr> <td align="right"> 18 </td> <td> 2012-10-18 </td> <td align="right"> 34.92 </td> <td align="right"> 34.92 </td> </tr>
-  <tr> <td align="right"> 19 </td> <td> 2012-10-19 </td> <td align="right"> 41.07 </td> <td align="right"> 41.07 </td> </tr>
-  <tr> <td align="right"> 20 </td> <td> 2012-10-20 </td> <td align="right"> 36.09 </td> <td align="right"> 36.09 </td> </tr>
-  <tr> <td align="right"> 21 </td> <td> 2012-10-21 </td> <td align="right"> 30.63 </td> <td align="right"> 30.63 </td> </tr>
-  <tr> <td align="right"> 22 </td> <td> 2012-10-22 </td> <td align="right"> 46.74 </td> <td align="right"> 46.74 </td> </tr>
-  <tr> <td align="right"> 23 </td> <td> 2012-10-23 </td> <td align="right"> 30.97 </td> <td align="right"> 30.97 </td> </tr>
-  <tr> <td align="right"> 24 </td> <td> 2012-10-24 </td> <td align="right"> 29.01 </td> <td align="right"> 29.01 </td> </tr>
-  <tr> <td align="right"> 25 </td> <td> 2012-10-25 </td> <td align="right"> 8.65 </td> <td align="right"> 8.65 </td> </tr>
-  <tr> <td align="right"> 26 </td> <td> 2012-10-26 </td> <td align="right"> 23.53 </td> <td align="right"> 23.53 </td> </tr>
-  <tr> <td align="right"> 27 </td> <td> 2012-10-27 </td> <td align="right"> 35.14 </td> <td align="right"> 35.14 </td> </tr>
-  <tr> <td align="right"> 28 </td> <td> 2012-10-28 </td> <td align="right"> 39.78 </td> <td align="right"> 39.78 </td> </tr>
-  <tr> <td align="right"> 29 </td> <td> 2012-10-29 </td> <td align="right"> 17.42 </td> <td align="right"> 17.42 </td> </tr>
-  <tr> <td align="right"> 30 </td> <td> 2012-10-30 </td> <td align="right"> 34.09 </td> <td align="right"> 34.09 </td> </tr>
-  <tr> <td align="right"> 31 </td> <td> 2012-10-31 </td> <td align="right"> 53.52 </td> <td align="right"> 53.52 </td> </tr>
-  <tr> <td align="right"> 32 </td> <td> 2012-11-01 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-  <tr> <td align="right"> 33 </td> <td> 2012-11-02 </td> <td align="right"> 36.81 </td> <td align="right"> 36.81 </td> </tr>
-  <tr> <td align="right"> 34 </td> <td> 2012-11-03 </td> <td align="right"> 36.70 </td> <td align="right"> 36.70 </td> </tr>
-  <tr> <td align="right"> 35 </td> <td> 2012-11-04 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-  <tr> <td align="right"> 36 </td> <td> 2012-11-05 </td> <td align="right"> 36.25 </td> <td align="right"> 36.25 </td> </tr>
-  <tr> <td align="right"> 37 </td> <td> 2012-11-06 </td> <td align="right"> 28.94 </td> <td align="right"> 28.94 </td> </tr>
-  <tr> <td align="right"> 38 </td> <td> 2012-11-07 </td> <td align="right"> 44.73 </td> <td align="right"> 44.73 </td> </tr>
-  <tr> <td align="right"> 39 </td> <td> 2012-11-08 </td> <td align="right"> 11.18 </td> <td align="right"> 11.18 </td> </tr>
-  <tr> <td align="right"> 40 </td> <td> 2012-11-09 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-  <tr> <td align="right"> 41 </td> <td> 2012-11-10 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-  <tr> <td align="right"> 42 </td> <td> 2012-11-11 </td> <td align="right"> 43.78 </td> <td align="right"> 43.78 </td> </tr>
-  <tr> <td align="right"> 43 </td> <td> 2012-11-12 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-  <tr> <td align="right"> 44 </td> <td> 2012-11-13 </td> <td align="right"> 25.47 </td> <td align="right"> 25.47 </td> </tr>
-  <tr> <td align="right"> 45 </td> <td> 2012-11-14 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-  <tr> <td align="right"> 46 </td> <td> 2012-11-15 </td> <td align="right"> 0.14 </td> <td align="right"> 0.14 </td> </tr>
-  <tr> <td align="right"> 47 </td> <td> 2012-11-16 </td> <td align="right"> 18.89 </td> <td align="right"> 18.89 </td> </tr>
-  <tr> <td align="right"> 48 </td> <td> 2012-11-17 </td> <td align="right"> 49.79 </td> <td align="right"> 49.79 </td> </tr>
-  <tr> <td align="right"> 49 </td> <td> 2012-11-18 </td> <td align="right"> 52.47 </td> <td align="right"> 52.47 </td> </tr>
-  <tr> <td align="right"> 50 </td> <td> 2012-11-19 </td> <td align="right"> 30.70 </td> <td align="right"> 30.70 </td> </tr>
-  <tr> <td align="right"> 51 </td> <td> 2012-11-20 </td> <td align="right"> 15.53 </td> <td align="right"> 15.53 </td> </tr>
-  <tr> <td align="right"> 52 </td> <td> 2012-11-21 </td> <td align="right"> 44.40 </td> <td align="right"> 44.40 </td> </tr>
-  <tr> <td align="right"> 53 </td> <td> 2012-11-22 </td> <td align="right"> 70.93 </td> <td align="right"> 70.93 </td> </tr>
-  <tr> <td align="right"> 54 </td> <td> 2012-11-23 </td> <td align="right"> 73.59 </td> <td align="right"> 73.59 </td> </tr>
-  <tr> <td align="right"> 55 </td> <td> 2012-11-24 </td> <td align="right"> 50.27 </td> <td align="right"> 50.27 </td> </tr>
-  <tr> <td align="right"> 56 </td> <td> 2012-11-25 </td> <td align="right"> 41.09 </td> <td align="right"> 41.09 </td> </tr>
-  <tr> <td align="right"> 57 </td> <td> 2012-11-26 </td> <td align="right"> 38.76 </td> <td align="right"> 38.76 </td> </tr>
-  <tr> <td align="right"> 58 </td> <td> 2012-11-27 </td> <td align="right"> 47.38 </td> <td align="right"> 47.38 </td> </tr>
-  <tr> <td align="right"> 59 </td> <td> 2012-11-28 </td> <td align="right"> 35.36 </td> <td align="right"> 35.36 </td> </tr>
-  <tr> <td align="right"> 60 </td> <td> 2012-11-29 </td> <td align="right"> 24.47 </td> <td align="right"> 24.47 </td> </tr>
-  <tr> <td align="right"> 61 </td> <td> 2012-11-30 </td> <td align="right"> 37.38 </td> <td align="right"> 37.38 </td> </tr>
-   </table>
-## Do these values differ from the estimates from the first part of the assignment? 
-
-Creating dataset with the original input plus replaced NA dataset
-
-
-```r
 DataMeanMedianNoNA$include_na <- FALSE
 DataMeanMedianAll$include_na <- TRUE
 DataMeanMedianAllAndNoNA <- rbind(DataMeanMedianNoNA,DataMeanMedianAll)
@@ -470,7 +340,7 @@ print(SummaryInputDataAllWeekday, type = "html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-4 package -->
-<!-- Sun Oct 19 20:35:06 2014 -->
+<!-- Sat Nov  8 12:43:11 2014 -->
 <table border=1>
 <tr> <th>  </th> <th>    interval </th> <th>      date </th> <th>     steps </th> <th>   weekday </th> <th> is_weekend </th> <th>    day_type </th>  </tr>
   <tr> <td align="right"> 1 </td> <td> Min.   :   0.0   </td> <td> Min.   :2012-10-01   </td> <td> Min.   :  0.00   </td> <td> Length:17568       </td> <td> Mode :logical   </td> <td> weekday:12960   </td> </tr>
@@ -513,4 +383,4 @@ ggplot(TotalByIntervAllWeekday, aes(x=interval, y=mean)) +
 
 ![plot of chunk comparingwd](figure/comparingwd-1.png) 
 
-Preliminary conclusions: There are differences in activity patterns between weekdays and weekends: The activity is higher on weekdays between 500 and 1000 intervals, and between 1750 and 2000. The activity is higher on weekends between 1500 and 1750 intervals, and just after 2000.  
+Preliminary conclusions: There are some differences in activity patterns between weekdays and weekends: The activity is higher on weekdays between 6:00 and 9:00 hours, and near 20:00, with the maximum around 8:35. The peak on weekends is also around 8:50 interval, being lower than on weekdays from 6:00 to 8:35, and slightly higher from 10:00 to 17:50 intervals. Near 20:00 interval, there is not a peak, as in the case of weekdays. It would be recommendable a deeper analysis of users time habits in the region, from home to work typical routes (walk, transport means), outdoor activities on weekends,...

@@ -1,14 +1,14 @@
 ---
 title: "PA1_template.Rmd"
 author: "Isabel M. Izquierdo Martin"
-date: "10/19/2014"
+date: "11/08/2014"
 output: html_document
 ---
 SCRIPT: PA1_template.Rmd
 
 AUTHOR: Isabel M. Izquierdo Martin (imim)
 
-DATE: 10/19/2014
+DATE: 11/08/2014
 
 OUTPUT: PA1_template.md, PA1_template.html files plus figure directory with the images 
 
@@ -22,7 +22,13 @@ LIMITATIONS: activity.csv, and the current R Markdown Script must be in the work
 
 EXECUTION: processing the R markdown file with knit2html() function in R
              (from the knitr package) by running the function from the console:
+             
+             library(knitr)
+             
+             library(markdown)
+             
              knit2html("PA1_template.Rmd", "PA1_template.html", options="")
+             
              knit2html("PA1_template.Rmd", "PA1_template.md", options="")
 
 # Loading and preprocessing the data
@@ -60,31 +66,19 @@ ggplot(InputDataNoNA, aes(x=as.factor(date), y=as.numeric(steps))) +
         theme(axis.title.x = element_text(size = 20)) +
         theme(axis.title.y = element_text(size = 20)) +
         ggtitle ("Total number of steps taken each date") + 
-        geom_bar(stat="identity", fill="lightblue")
+        geom_histogram(stat="identity", fill="lightblue")
 ```
 
 ## Calculate and report the mean and median total number of steps taken per day
-```{r meanmedianperday, echo = TRUE, results="asis"}
-# In order to use tapply, sapply
-library(plyr)
-mean <- tapply(InputDataNoNA$steps,InputDataNoNA$date, mean, na.rm=TRUE)
-median <- tapply(InputDataNoNA$steps,InputDataNoNA$date, mean, na.rm=TRUE)
-mean <- as.data.frame(mean)
-median <- as.data.frame(median)
-DataMeanMedian <- as.data.frame(c(mean,median))
-DataMeanMedian$date <- rownames(DataMeanMedian)
-DataMeanMedianNoNA <- DataMeanMedian
 
-row.names(DataMeanMedianNoNA) <- NULL
-DataMeanMedianNoNA <- DataMeanMedianNoNA[, c("date","mean","median")]
-
-TableMeanMedian <- xtable(DataMeanMedianNoNA)
-print(TableMeanMedian, type = "html")
-```
+The mean total number of steps taken per day is `r mean(InputDataNoNA$steps, na.rm=TRUE)`.
+The median total number of steps taken per day is `r median(InputDataNoNA$steps, na.rm=TRUE)`.
 
 # What is the average daily activity pattern?
 ## Make a time series plot (i.e. type = "l")
 ```{r timeseriesplot, echo = TRUE, fig.width=25, fig.height=10}
+# In order to use "ddply"
+library("plyr")
 DataMeanByInterval <- ddply(InputDataNoNA,c('interval'), summarise, 
      mean=(mean(steps,na.rm=TRUE)))
 
@@ -107,7 +101,7 @@ print(p)
 ## Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
 
 ```{r maxmeaninterv, echo = TRUE}
-MaxMeanInterval <- DataMeanByInterval[max(DataMeanByInterval$mean),]
+MaxMeanInterval <- DataMeanByInterval[DataMeanByInterval$mean==max(DataMeanByInterval$mean),]
 ```
 The interval `r MaxMeanInterval$interval` contains the maximun number of steps (on average accross all the days): `r MaxMeanInterval$mean` steps.
 
@@ -157,13 +151,33 @@ ggplot(InputDataAll, aes(x=as.factor(date), y=as.numeric(steps))) +
         theme(axis.title.x = element_text(size = 20)) +
         theme(axis.title.y = element_text(size = 20)) +
         ggtitle ("Total number of steps taken each date (after NA filled-in)") + 
-        geom_bar(stat="identity", fill="lightblue")
+        geom_histogram(stat="identity", fill="lightblue")
 ```
 
 ## Calculate and report the mean and median total number of steps taken per day
-```{r meanmedianreplacedna, echo = TRUE, results="asis"}
+The mean total number of steps taken per day is `r mean(InputDataAll$steps, na.rm=TRUE)`.
+The median total number of steps taken per day is `r median(InputDataAll$steps, na.rm=TRUE)`.
+
+## Do these values differ from the estimates from the first part of the assignment? 
+No, these values don't differ from the estimates from the first part of the assignment.
+Let's see why.
+
+Creating dataset with the mean and median for the original input plus replaced NA dataset
+
+```{r mixingdataset, echo = TRUE}
+mean <- tapply(InputDataNoNA$steps,InputDataNoNA$date, mean, na.rm=TRUE)
+median <- tapply(InputDataNoNA$steps,InputDataNoNA$date, median, na.rm=TRUE)
+mean <- as.data.frame(mean)
+median <- as.data.frame(median)
+DataMeanMedian <- as.data.frame(c(mean,median))
+DataMeanMedian$date <- rownames(DataMeanMedian)
+DataMeanMedianNoNA <- DataMeanMedian
+
+row.names(DataMeanMedianNoNA) <- NULL
+DataMeanMedianNoNA <- DataMeanMedianNoNA[, c("date","mean","median")]
+
 meanAll <- tapply(InputDataAll$steps,InputDataAll$date, mean, na.rm=TRUE)
-medianAll <- tapply(InputDataAll$steps,InputDataAll$date, mean, na.rm=TRUE)
+medianAll <- tapply(InputDataAll$steps,InputDataAll$date, median, na.rm=TRUE)
 meanAll <- as.data.frame(meanAll)
 medianAll <- as.data.frame(medianAll)
 DataMeanMedianAll <- as.data.frame(c(meanAll,medianAll))
@@ -173,14 +187,6 @@ row.names(DataMeanMedianAll) <- NULL
 DataMeanMedianAll <- DataMeanMedianAll[, c("date","meanAll","medianAll")]
 names(DataMeanMedianAll) <- c("date", "mean", "median")
 
-TableMeanMedianAll <- xtable(DataMeanMedianAll)
-print(TableMeanMedianAll, type = "html")
-```
-## Do these values differ from the estimates from the first part of the assignment? 
-
-Creating dataset with the original input plus replaced NA dataset
-
-```{r mixingdataset, echo = TRUE}
 DataMeanMedianNoNA$include_na <- FALSE
 DataMeanMedianAll$include_na <- TRUE
 DataMeanMedianAllAndNoNA <- rbind(DataMeanMedianNoNA,DataMeanMedianAll)
@@ -289,4 +295,4 @@ ggplot(TotalByIntervAllWeekday, aes(x=interval, y=mean)) +
         geom_line(colour="deepskyblue2")
 ```
 
-Preliminary conclusions: There are differences in activity patterns between weekdays and weekends: The activity is higher on weekdays between 500 and 1000 intervals, and between 1750 and 2000. The activity is higher on weekends between 1500 and 1750 intervals, and just after 2000.  
+Preliminary conclusions: There are some differences in activity patterns between weekdays and weekends: The activity is higher on weekdays between 6:00 and 9:00 hours, and near 20:00, with the maximum around 8:35. The peak on weekends is also around 8:50 interval, being lower than on weekdays from 6:00 to 8:35, and slightly higher from 10:00 to 17:50 intervals. Near 20:00 interval, there is not a peak, as in the case of weekdays. It would be recommendable a deeper analysis of users time habits in the region, from home to work typical routes (walk, transport means), outdoor activities on weekends,...
